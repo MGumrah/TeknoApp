@@ -7,17 +7,46 @@
 
 import SwiftUI
 
+
+
+
+
+
+
+
+
+
 struct ContentView: View {
+    @Environment(\.colorScheme) var colorScheme
+    @State private var selectedTab: Int = 0
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        TabView{
+            TeknoHomePage()
+                .tabItem{
+                Label("Tekno", image: "TeknoLogoSF")
+                }
+            SeypaHomePage()
+                .tabItem {
+                    Label("Seypa", image: "SeypaLogoSF")
+                }
+            SelahattinCelikerHomePage()
+                .tabItem {
+                    Label("Selahattin Çeliker", systemImage: "person")
+                }
+            MapView()
+                .tabItem {
+                    Label("Map", systemImage: "map")
+                }
         }
-        .padding()
     }
 }
+
+    
+    
+
+
+
 
 #Preview {
     ContentView()
