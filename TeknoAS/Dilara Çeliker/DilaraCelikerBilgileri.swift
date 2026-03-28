@@ -1,43 +1,41 @@
 //
-//  firmaBilgileri.swift
-//  Tekno AS
+//  DilaraCelikerBilgileri.swift
+//  TeknoAS
 //
-//  Created by Mehmet Gümrah on 14.01.2025.
+//  Created by Mehmet Gümrah on 16.03.2026.
 //
 
 import SwiftUI
 
-let firmaBilgileri = "TEKNO İKLİMLENDİRME VE MÜHENDİSLİK A.Ş.\rGÜMÜŞÇAY MAH. FABRİKALAR CAD. NO:66 F-2 BLOK\rMERKEZEFENDİ / DENİZLİ\rGÖKPINAR VERGİ DAİRESİ\r8360461195\rinfo@teknoiklimlendirme.com\r0 258 242 31 31"
-
-struct TeknoFirmaBilgileri: View {
+struct DilaraCelikerBilgileri: View {
+    let dcBilgileri: String = "DİLARA ÇELİKER\nGÜMÜŞÇAY MAH. FABRİKALAR CAD. NO:66 F-2 BLOK\nMERKEZEFENDİ / DENİZLİ\nGÖKPINAR VERGİ DAİRESİ\n10361095072\ninfo@teknoiklimlendirme.com\n0 534 540 57 37"
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                // Firma Adı Başlık
                 VStack(spacing: 8) {
                     ZStack {
                         Circle()
                             .fill(
                                 LinearGradient(
-                                    colors: [.blue, .cyan],
+                                    colors: [.pink, .purple],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
                             )
                             .frame(width: 70, height: 70)
                         
-                        Image(systemName: "building.2.fill")
+                        Image(systemName: "person.fill")
                             .font(.system(size: 30))
                             .foregroundStyle(.white)
                     }
                     
-                    Text("TEKNO İKLİMLENDİRME VE MÜHENDİSLİK A.Ş.")
+                    Text("DİLARA ÇELİKER")
                         .font(.headline)
                         .multilineTextAlignment(.center)
                 }
                 .padding(.top, 8)
                 
-                // Bilgi Kartları
                 VStack(spacing: 0) {
                     FirmaBilgiRow(
                         icon: "mappin.and.ellipse",
@@ -49,19 +47,10 @@ struct TeknoFirmaBilgileri: View {
                     Divider().padding(.leading, 56)
                     
                     FirmaBilgiRow(
-                        icon: "doc.text",
-                        title: "Vergi Dairesi",
-                        value: "GÖKPINAR VERGİ DAİRESİ",
+                        icon: "person.text.rectangle",
+                        title: "T.C. Kimlik No",
+                        value: "29536955240",
                         color: .orange
-                    )
-                    
-                    Divider().padding(.leading, 56)
-                    
-                    FirmaBilgiRow(
-                        icon: "number",
-                        title: "Vergi No",
-                        value: "8360461195",
-                        color: .purple
                     )
                     
                     Divider().padding(.leading, 56)
@@ -78,7 +67,7 @@ struct TeknoFirmaBilgileri: View {
                     FirmaBilgiRow(
                         icon: "phone.fill",
                         title: "Telefon",
-                        value: "0 258 242 31 31",
+                        value: "0 530 159 53 19",
                         color: .green
                     )
                 }
@@ -89,8 +78,7 @@ struct TeknoFirmaBilgileri: View {
                 )
                 .padding(.horizontal)
                 
-                // Paylaş Butonu
-                ShareLink(item: firmaBilgileri) {
+                ShareLink(item: dcBilgileri) {
                     Label("Bilgileri Paylaş", systemImage: "square.and.arrow.up")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
@@ -105,49 +93,13 @@ struct TeknoFirmaBilgileri: View {
             .textSelection(.enabled)
         }
         .background(Color(.systemGroupedBackground))
-        .navigationTitle("Firma Bilgileri")
+        .navigationTitle("Şahıs Bilgileri")
         .navigationBarTitleDisplayMode(.inline)
-    }
-}
-
-// MARK: - Ortak Bilgi Satırı
-struct FirmaBilgiRow: View {
-    let icon: String
-    let title: String
-    let value: String
-    let color: Color
-    
-    var body: some View {
-        HStack(alignment: .top, spacing: 16) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(color.opacity(0.15))
-                    .frame(width: 36, height: 36)
-                
-                Image(systemName: icon)
-                    .font(.system(size: 16))
-                    .foregroundStyle(color)
-            }
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text(value)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundStyle(.primary)
-            }
-            
-            Spacer()
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
     }
 }
 
 #Preview {
     NavigationStack {
-        TeknoFirmaBilgileri()
+        DilaraCelikerBilgileri()
     }
 }

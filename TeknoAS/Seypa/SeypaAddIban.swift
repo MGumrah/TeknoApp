@@ -1,14 +1,14 @@
 //
-//  ibaneklemeclaude.swift
+//  SeypaAddIban.swift
 //  TeknoAS
 //
-//  Created by Mehmet Gümrah on 15.03.2025.
+//  Created by Mehmet Gümrah on 13.02.2026.
 //
 import SwiftUI
 
-struct SCAddIban: View {
+struct SeypaAddIban: View {
     @State private var iban: String = "TR"
-    @State private var firmName: String = "SELAHATTİN ÇELİKER"
+    @State private var firmName: String = "SEYPA TESİSAT ISIT.SOĞ.SİS.İNŞ.SAN.VE TİC.LTD.ŞTİ."
     @State private var bankName: String = ""
     @State private var showBankPicker = false
     
@@ -20,7 +20,7 @@ struct SCAddIban: View {
         "VAKIFBANK", "VAKIF KATILIM", "YAPI KREDİ", "ZİRAAT", "ZİRAAT KATILIM"
     ]
     
-    let viewModel: SCIbanViewModel
+    let viewModel: SeypaIbanViewModel
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -239,7 +239,7 @@ struct SCAddIban: View {
                 }
             }
             .sheet(isPresented: $showBankPicker) {
-                SCIbanBankPickerView(selectedBank: $bankName, banks: bankOptions)
+                BankPickerView(selectedBank: $bankName, banks: bankOptions)
             }
         }
     }
@@ -350,9 +350,8 @@ struct SCAddIban: View {
         return formatted
     }
 }
-
 // MARK: - Banka Seçim Görünümü
-struct SCIbanBankPickerView: View {
+struct BankPickerView: View {
     @Binding var selectedBank: String
     let banks: [String]
     @Environment(\.dismiss) var dismiss

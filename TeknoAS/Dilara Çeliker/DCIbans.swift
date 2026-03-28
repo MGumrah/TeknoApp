@@ -1,17 +1,17 @@
 //
-//  SelahattinCelikeriban.swift
+//  DCIbans.swift
 //  TeknoAS
 //
-//  Created by Mehmet Gümrah on 15.02.2025.
+//  Created by Mehmet Gümrah on 16.03.2026.
 //
 
 import SwiftUI
 import SwiftData
 
 
-struct SCIbansView: View {
+struct DCIbansView: View {
     @Environment(\.modelContext) var modelContext
-    @Query private var ibans: [SCIbans] // Veritabanından IBAN'ları çek
+    @Query private var ibans: [DCIbans]
     
     var body: some View {
         List(ibans) { iban in
@@ -27,7 +27,7 @@ struct SCIbansView: View {
 
 
 @Model
-class SCIbans: Identifiable {
+class DCIbans: Identifiable {
     var id: UUID
     var bankName: String
     var iban: String
@@ -45,6 +45,5 @@ class SCIbans: Identifiable {
 }
 
 #Preview {
-    SCIbansView()
+    DCIbansView()
 }
- 

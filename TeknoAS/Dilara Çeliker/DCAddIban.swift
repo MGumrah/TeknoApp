@@ -1,14 +1,14 @@
 //
-//  ibaneklemeclaude.swift
+//  DCAddIban.swift
 //  TeknoAS
 //
-//  Created by Mehmet Gümrah on 15.03.2025.
+//  Created by Mehmet Gümrah on 16.03.2026.
 //
 import SwiftUI
 
-struct SCAddIban: View {
+struct DCAddIban: View {
     @State private var iban: String = "TR"
-    @State private var firmName: String = "SELAHATTİN ÇELİKER"
+    @State private var firmName: String = "DİLARA ÇELİKER"
     @State private var bankName: String = ""
     @State private var showBankPicker = false
     
@@ -20,7 +20,7 @@ struct SCAddIban: View {
         "VAKIFBANK", "VAKIF KATILIM", "YAPI KREDİ", "ZİRAAT", "ZİRAAT KATILIM"
     ]
     
-    let viewModel: SCIbanViewModel
+    let viewModel: DCIbanViewModel
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -239,7 +239,7 @@ struct SCAddIban: View {
                 }
             }
             .sheet(isPresented: $showBankPicker) {
-                SCIbanBankPickerView(selectedBank: $bankName, banks: bankOptions)
+                DCIbanBankPickerView(selectedBank: $bankName, banks: bankOptions)
             }
         }
     }
@@ -257,34 +257,20 @@ struct SCAddIban: View {
     
     private var bankColor: Color {
         switch bankName.uppercased() {
-        case let name where name.contains("GARANTİ"):
-            return .green
-        case let name where name.contains("YAPI"):
-            return .blue
-        case let name where name.contains("AKBANK"):
-            return .red
-        case let name where name.contains("FİNANS"):
-            return .orange
-        case let name where name.contains("İŞ"):
-            return .indigo
-        case let name where name.contains("VAKIF"):
-            return .cyan
-        case let name where name.contains("DENİZ"):
-            return .teal
-        case let name where name.contains("ZİRAAT"):
-            return .green
-        case let name where name.contains("HALK"):
-            return .red
-        case let name where name.contains("ANADOLU"):
-            return .purple
-        case let name where name.contains("KUVEYT"):
-            return .green
-        case let name where name.contains("ALBARAKA"):
-            return .mint
-        case let name where name.contains("FİBA"):
-            return .pink
-        default:
-            return .blue
+        case let name where name.contains("GARANTİ"): return .green
+        case let name where name.contains("YAPI"): return .blue
+        case let name where name.contains("AKBANK"): return .red
+        case let name where name.contains("FİNANS"): return .orange
+        case let name where name.contains("İŞ"): return .indigo
+        case let name where name.contains("VAKIF"): return .cyan
+        case let name where name.contains("DENİZ"): return .teal
+        case let name where name.contains("ZİRAAT"): return .green
+        case let name where name.contains("HALK"): return .red
+        case let name where name.contains("ANADOLU"): return .purple
+        case let name where name.contains("KUVEYT"): return .green
+        case let name where name.contains("ALBARAKA"): return .mint
+        case let name where name.contains("FİBA"): return .pink
+        default: return .blue
         }
     }
     
@@ -299,46 +285,36 @@ struct SCAddIban: View {
     // MARK: - Helper Functions
     
     private func formatIbanInput(_ input: String) -> String {
-        // Sadece harf ve rakamları al
         var cleaned = input.uppercased().filter { $0.isLetter || $0.isNumber }
         
-        // Eğer boş ise TR döndür
         if cleaned.isEmpty {
             return "TR"
         }
         
-        // Eğer TR'nin bir kısmını silmeye çalışıyorsa, TR'yi koru
         if cleaned.count < 2 {
             if cleaned == "T" {
                 return "TR"
             } else if cleaned.hasPrefix("T") {
                 return "TR"
             } else {
-                // T ile başlamayan bir karakter girildiyse TR'den sonra ekle
                 return "TR" + cleaned
             }
         }
         
-        // TR ile başlamıyorsa otomatik ekle
         if !cleaned.hasPrefix("TR") {
-            // Eğer sadece "T" varsa
             if cleaned.hasPrefix("T") && cleaned.count == 1 {
                 cleaned = "TR"
             }
-            // TR'nin ikinci harfini silmeye çalıştıysa
             else if cleaned.hasPrefix("T") && !cleaned.hasPrefix("TR") {
                 cleaned = "TR" + cleaned.dropFirst()
             }
-            // Hiç T yoksa başına TR ekle
             else if !cleaned.hasPrefix("T") {
                 cleaned = "TR" + cleaned
             }
         }
         
-        // 26 karakterle sınırla
         let limited = String(cleaned.prefix(26))
         
-        // Her 4 karakterde bir boşluk ekle
         var formatted = ""
         for (index, char) in limited.enumerated() {
             if index > 0 && index % 4 == 0 {
@@ -352,7 +328,7 @@ struct SCAddIban: View {
 }
 
 // MARK: - Banka Seçim Görünümü
-struct SCIbanBankPickerView: View {
+struct DCIbanBankPickerView: View {
     @Binding var selectedBank: String
     let banks: [String]
     @Environment(\.dismiss) var dismiss
@@ -439,4 +415,3 @@ struct SCIbanBankPickerView: View {
         return String(bank.prefix(2)).uppercased()
     }
 }
-

@@ -1,16 +1,16 @@
 //
-//  SeypaIban.swift
+//  DCIban.swift
 //  TeknoAS
 //
-//  Created by Mehmet Gümrah on 13.02.2026.
+//  Created by Mehmet Gümrah on 16.03.2026.
 //
 
 import SwiftUI
 import SwiftData
 
-class SeypaIbanViewModel: ObservableObject {
+class DCIbanViewModel: ObservableObject {
     @Published var showAddSheet = false
-    @Published var ibanList: [SeypaIbans]
+    @Published var ibanList: [DCIbans]
     private var modelContext: ModelContext
 
     init(modelContext: ModelContext) {
@@ -21,9 +21,7 @@ class SeypaIbanViewModel: ObservableObject {
 
     func fetchIbans() {
         do {
-            let descriptor = FetchDescriptor<SeypaIbans>(
-                sortBy: [SortDescriptor(\.sortOrder)]
-            )
+            let descriptor = FetchDescriptor<DCIbans>()
             ibanList = try modelContext.fetch(descriptor)
         } catch {
             print("IBAN'lar çekilemedi: \(error)")
@@ -31,8 +29,7 @@ class SeypaIbanViewModel: ObservableObject {
     }
 
     func addIban(bankName: String, iban: String, firmName: String) {
-        let maxOrder = ibanList.map(\.sortOrder).max() ?? -1
-        let newIban = SeypaIbans(bankName: bankName, iban: iban, firmName: firmName, sortOrder: maxOrder + 1)
+        let newIban = DCIbans(bankName: bankName, iban: iban, firmName: firmName)
         modelContext.insert(newIban)
         saveContext()
         fetchIbans()
@@ -48,9 +45,6 @@ class SeypaIbanViewModel: ObservableObject {
 
     func moveIbans(from: IndexSet, to: Int) {
         ibanList.move(fromOffsets: from, toOffset: to)
-        for (index, iban) in ibanList.enumerated() {
-            iban.sortOrder = index
-        }
         saveContext()
     }
 
@@ -67,20 +61,19 @@ class SeypaIbanViewModel: ObservableObject {
     }
 }
 
-struct SeypaIban: View {
+struct DCIban: View {
     @Environment(\.modelContext) var modelContext
-    @StateObject private var ibanViewModel: SeypaIbanViewModel
+    @StateObject private var ibanViewModel: DCIbanViewModel
     @State private var editMode: EditMode = .inactive
 
     init(modelContext: ModelContext) {
-        _ibanViewModel = StateObject(wrappedValue: SeypaIbanViewModel(modelContext: modelContext))
+        _ibanViewModel = StateObject(wrappedValue: DCIbanViewModel(modelContext: modelContext))
     }
 
     var body: some View {
         NavigationStack {
             List {
                 if editMode == .inactive {
-                    // Tüm Bankalar Kartı
                     ShareLink(
                         item: ibanViewModel.getAllBanksShareText(),
                         label: {
@@ -131,7 +124,7 @@ struct SeypaIban: View {
                         ShareLink(
                             item: "\(iban.firmName)\n\(iban.bankName)\n\(iban.iban)",
                             label: {
-                                SeypaIbanCardView(iban: iban)
+                                DCIbanCardView(iban: iban)
                             }
                         )
                         .listRowBackground(
@@ -140,7 +133,7 @@ struct SeypaIban: View {
                                 .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
                         )
                     } else {
-                        SeypaIbanEditCardView(iban: iban)
+                        DCIbanEditCardView(iban: iban)
                     }
                 }
                 .onDelete(perform: ibanViewModel.deleteIban)
@@ -166,19 +159,18 @@ struct SeypaIban: View {
             }
             .environment(\.editMode, $editMode)
             .sheet(isPresented: $ibanViewModel.showAddSheet) {
-                SeypaAddIban(viewModel: ibanViewModel)
+                DCAddIban(viewModel: ibanViewModel)
             }
         }
     }
 }
 
 // MARK: - IBAN Kart Görünümü
-struct SeypaIbanCardView: View {
-    let iban: SeypaIbans
+struct DCIbanCardView: View {
+    let iban: DCIbans
     
     var body: some View {
         HStack(spacing: 16) {
-            // Banka İkonu
             ZStack {
                 Circle()
                     .fill(bankColor.opacity(0.15))
@@ -189,7 +181,6 @@ struct SeypaIbanCardView: View {
                     .foregroundStyle(bankColor)
             }
             
-            // Banka Bilgileri
             VStack(alignment: .leading, spacing: 6) {
                 Text(iban.bankName)
                     .font(.system(size: 17, weight: .semibold))
@@ -208,7 +199,6 @@ struct SeypaIbanCardView: View {
             
             Spacer()
             
-            // Paylaş İkonu
             Image(systemName: "square.and.arrow.up")
                 .font(.title3)
                 .foregroundStyle(bankColor)
@@ -216,41 +206,25 @@ struct SeypaIbanCardView: View {
         .padding(.vertical, 12)
     }
     
-    // Banka için renk belirleme
     private var bankColor: Color {
         switch iban.bankName.uppercased() {
-        case let name where name.contains("GARANTİ"):
-            return .green
-        case let name where name.contains("YAPI"):
-            return .blue
-        case let name where name.contains("AKBANK"):
-            return .red
-        case let name where name.contains("FİNANS"):
-            return .orange
-        case let name where name.contains("İŞ"):
-            return .indigo
-        case let name where name.contains("VAKIF"):
-            return .cyan
-        case let name where name.contains("DENİZ"):
-            return .teal
-        case let name where name.contains("ZİRAAT"):
-            return .green
-        case let name where name.contains("HALK"):
-            return .red
-        case let name where name.contains("ANADOLU"):
-            return .purple
-        case let name where name.contains("KUVEYT"):
-            return .green
-        case let name where name.contains("ALBARAKA"):
-            return .mint
-        case let name where name.contains("FİBA"):
-            return .pink
-        default:
-            return .blue
+        case let name where name.contains("GARANTİ"): return .green
+        case let name where name.contains("YAPI"): return .blue
+        case let name where name.contains("AKBANK"): return .red
+        case let name where name.contains("FİNANS"): return .orange
+        case let name where name.contains("İŞ"): return .indigo
+        case let name where name.contains("VAKIF"): return .cyan
+        case let name where name.contains("DENİZ"): return .teal
+        case let name where name.contains("ZİRAAT"): return .green
+        case let name where name.contains("HALK"): return .red
+        case let name where name.contains("ANADOLU"): return .purple
+        case let name where name.contains("KUVEYT"): return .green
+        case let name where name.contains("ALBARAKA"): return .mint
+        case let name where name.contains("FİBA"): return .pink
+        default: return .blue
         }
     }
     
-    // Banka baş harfleri
     private var bankInitials: String {
         let words = iban.bankName.split(separator: " ")
         if words.count >= 2 {
@@ -259,7 +233,6 @@ struct SeypaIbanCardView: View {
         return String(iban.bankName.prefix(2)).uppercased()
     }
     
-    // IBAN formatı düzenleme
     private func formatIban(_ iban: String) -> String {
         let cleaned = iban.replacingOccurrences(of: " ", with: "")
         var formatted = ""
@@ -272,9 +245,10 @@ struct SeypaIbanCardView: View {
         return formatted
     }
 }
+
 // MARK: - Düzenleme Modu Kart Görünümü
-struct SeypaIbanEditCardView: View {
-    let iban: SeypaIbans
+struct DCIbanEditCardView: View {
+    let iban: DCIbans
     
     var body: some View {
         HStack(spacing: 16) {
@@ -297,5 +271,3 @@ struct SeypaIbanEditCardView: View {
         .padding(.vertical, 4)
     }
 }
-
-

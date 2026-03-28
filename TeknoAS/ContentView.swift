@@ -7,46 +7,34 @@
 
 import SwiftUI
 
-
-
-
-
-
-
-
-
-
 struct ContentView: View {
     @Environment(\.colorScheme) var colorScheme
-    @State private var selectedTab: Int = 0
     
     var body: some View {
         TabView{
             TeknoHomePage()
                 .tabItem{
-                Label("Tekno", image: "TeknoLogoSF")
+                Label("Tekno A.Ş", image: "TeknoLogoSF")
                 }
             SeypaHomePage()
                 .tabItem {
-                    Label("Seypa", image: "SeypaLogoSF")
+                    Label("Seypa Ltd", image: "SeypaLogoSF")
                 }
             SelahattinCelikerHomePage()
                 .tabItem {
-                    Label("Selahattin Çeliker", systemImage: "person")
+                    Label("S. Çeliker", systemImage: "person")
+                }
+            DilaraCelikerHomePage()
+                .tabItem {
+                    Label("D. Çeliker", systemImage: "person")
                 }
             MapView()
                 .tabItem {
-                    Label("Map", systemImage: "map")
+                    Label("MAPS_", systemImage: "map")
                 }
         }
     }
 }
-
-    
-    
-
-
-
 
 #Preview {
     ContentView()

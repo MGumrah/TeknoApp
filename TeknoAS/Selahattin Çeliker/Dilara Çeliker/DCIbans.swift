@@ -1,17 +1,17 @@
 //
-//  TeknoData.swift
+//  DCIbans.swift
 //  TeknoAS
 //
-//  Created by Mehmet Gümrah on 12.05.2025.
+//  Created by Mehmet Gümrah on 16.03.2026.
 //
 
 import SwiftUI
 import SwiftData
 
 
-struct TeknoData: View {
+struct DCIbansView: View {
     @Environment(\.modelContext) var modelContext
-    @Query private var ibans: [TeknoIbans] // Veritabanından IBAN'ları çek
+    @Query private var ibans: [DCIbans]
     
     var body: some View {
         List(ibans) { iban in
@@ -27,7 +27,7 @@ struct TeknoData: View {
 
 
 @Model
-class TeknoIbans: Identifiable {
+class DCIbans: Identifiable {
     var id: UUID
     var bankName: String
     var iban: String
@@ -40,4 +40,8 @@ class TeknoIbans: Identifiable {
         self.firmName = firmName
     }
     
+}
+
+#Preview {
+    DCIbansView()
 }

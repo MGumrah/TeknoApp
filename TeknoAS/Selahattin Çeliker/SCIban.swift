@@ -8,7 +8,7 @@
 import SwiftUI
 import SwiftData
 
-class IbanViewModel: ObservableObject {
+class SCIbanViewModel: ObservableObject {
     @Published var showAddSheet = false
     @Published var ibanList: [SCIbans]
     private var modelContext: ModelContext
@@ -21,7 +21,9 @@ class IbanViewModel: ObservableObject {
 
     func fetchIbans() {
         do {
-            let descriptor = FetchDescriptor<SCIbans>()
+            let descriptor = FetchDescriptor<SCIbans>(
+                sortBy: [SortDescriptor(\.sortOrder)]
+            )
             ibanList = try modelContext.fetch(descriptor)
         } catch {
             print("IBAN'lar çekilemedi: \(error)")
@@ -29,7 +31,8 @@ class IbanViewModel: ObservableObject {
     }
 
     func addIban(bankName: String, iban: String, firmName: String) {
-        let newIban = SCIbans(bankName: bankName, iban: iban, firmName: firmName)
+        let maxOrder = ibanList.map(\.sortOrder).max() ?? -1
+        let newIban = SCIbans(bankName: bankName, iban: iban, firmName: firmName, sortOrder: maxOrder + 1)
         modelContext.insert(newIban)
         saveContext()
         fetchIbans()
@@ -45,6 +48,9 @@ class IbanViewModel: ObservableObject {
 
     func moveIbans(from: IndexSet, to: Int) {
         ibanList.move(fromOffsets: from, toOffset: to)
+        for (index, iban) in ibanList.enumerated() {
+            iban.sortOrder = index
+        }
         saveContext()
     }
 
@@ -63,20 +69,60 @@ class IbanViewModel: ObservableObject {
 
 struct SCIban: View {
     @Environment(\.modelContext) var modelContext
-    @StateObject private var ibanViewModel: IbanViewModel
+    @StateObject private var ibanViewModel: SCIbanViewModel
     @State private var editMode: EditMode = .inactive
 
     init(modelContext: ModelContext) {
-        _ibanViewModel = StateObject(wrappedValue: IbanViewModel(modelContext: modelContext))
+        _ibanViewModel = StateObject(wrappedValue: SCIbanViewModel(modelContext: modelContext))
     }
 
     var body: some View {
         NavigationStack {
             List {
                 if editMode == .inactive {
+                    // Tüm Bankalar Kartı
                     ShareLink(
                         item: ibanViewModel.getAllBanksShareText(),
-                        label: { Label("TÜM BANKALAR", systemImage: "square.and.arrow.up") }
+                        label: {
+                            HStack(spacing: 16) {
+                                ZStack {
+                                    Circle()
+                                        .fill(
+                                            LinearGradient(
+                                                colors: [.blue, .purple],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            )
+                                        )
+                                        .frame(width: 50, height: 50)
+                                    
+                                    Image(systemName: "building.2.fill")
+                                        .font(.system(size: 22))
+                                        .foregroundStyle(.white)
+                                }
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("TÜM BANKALAR")
+                                        .font(.headline)
+                                        .foregroundStyle(.primary)
+                                    Text("\(ibanViewModel.ibanList.count) banka hesabı")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                
+                                Spacer()
+                                
+                                Image(systemName: "square.and.arrow.up")
+                                    .font(.title3)
+                                    .foregroundStyle(.blue)
+                            }
+                            .padding(.vertical, 8)
+                        }
+                    )
+                    .listRowBackground(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(.systemBackground))
+                            .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
                     )
                 }
 
@@ -84,23 +130,33 @@ struct SCIban: View {
                     if editMode == .inactive {
                         ShareLink(
                             item: "\(iban.firmName)\n\(iban.bankName)\n\(iban.iban)",
-                            label: { Label("\(iban.firmName) \(iban.bankName)", systemImage: "square.and.arrow.up") }
+                            label: {
+                                SCIbanCardView(iban: iban)
+                            }
+                        )
+                        .listRowBackground(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color(.systemBackground))
+                                .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
                         )
                     } else {
-                        VStack(alignment: .leading) {
-                            Text(iban.firmName).font(.headline)
-                            Text(iban.bankName)
-                            Text(iban.iban).font(.caption)
-                        }
+                        SCIbanEditCardView(iban: iban)
                     }
                 }
                 .onDelete(perform: ibanViewModel.deleteIban)
                 .onMove(perform: ibanViewModel.moveIbans)
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(Color(.systemGroupedBackground))
             .navigationTitle("IBAN Bilgileri")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    EditButton()
+                    Button(editMode == .inactive ? "Düzenle" : "Tamam") {
+                        withAnimation {
+                            editMode = editMode == .inactive ? .active : .inactive
+                        }
+                    }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { ibanViewModel.showAddSheet = true }) {
@@ -113,6 +169,132 @@ struct SCIban: View {
                 SCAddIban(viewModel: ibanViewModel)
             }
         }
+    }
+}
+
+// MARK: - IBAN Kart Görünümü
+struct SCIbanCardView: View {
+    let iban: SCIbans
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            // Banka İkonu
+            ZStack {
+                Circle()
+                    .fill(bankColor.opacity(0.15))
+                    .frame(width: 50, height: 50)
+                
+                Text(bankInitials)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(bankColor)
+            }
+            
+            // Banka Bilgileri
+            VStack(alignment: .leading, spacing: 6) {
+                Text(iban.bankName)
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(.primary)
+                
+                Text(iban.firmName)
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                
+                Text(formatIban(iban.iban))
+                    .font(.system(size: 12, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+            
+            Spacer()
+            
+            // Paylaş İkonu
+            Image(systemName: "square.and.arrow.up")
+                .font(.title3)
+                .foregroundStyle(bankColor)
+        }
+        .padding(.vertical, 12)
+    }
+    
+    // Banka için renk belirleme
+    private var bankColor: Color {
+        switch iban.bankName.uppercased() {
+        case let name where name.contains("GARANTİ"):
+            return .green
+        case let name where name.contains("YAPI"):
+            return .blue
+        case let name where name.contains("AKBANK"):
+            return .red
+        case let name where name.contains("FİNANS"):
+            return .orange
+        case let name where name.contains("İŞ"):
+            return .indigo
+        case let name where name.contains("VAKIF"):
+            return .cyan
+        case let name where name.contains("DENİZ"):
+            return .teal
+        case let name where name.contains("ZİRAAT"):
+            return .green
+        case let name where name.contains("HALK"):
+            return .red
+        case let name where name.contains("ANADOLU"):
+            return .purple
+        case let name where name.contains("KUVEYT"):
+            return .green
+        case let name where name.contains("ALBARAKA"):
+            return .mint
+        case let name where name.contains("FİBA"):
+            return .pink
+        default:
+            return .blue
+        }
+    }
+    
+    // Banka baş harfleri
+    private var bankInitials: String {
+        let words = iban.bankName.split(separator: " ")
+        if words.count >= 2 {
+            return "\(words[0].prefix(1))\(words[1].prefix(1))".uppercased()
+        }
+        return String(iban.bankName.prefix(2)).uppercased()
+    }
+    
+    // IBAN formatı düzenleme
+    private func formatIban(_ iban: String) -> String {
+        let cleaned = iban.replacingOccurrences(of: " ", with: "")
+        var formatted = ""
+        for (index, char) in cleaned.enumerated() {
+            if index > 0 && index % 4 == 0 {
+                formatted += " "
+            }
+            formatted.append(char)
+        }
+        return formatted
+    }
+}
+// MARK: - Düzenleme Modu Kart Görünümü
+struct SCIbanEditCardView: View {
+    let iban: SCIbans
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            Image(systemName: "line.3.horizontal")
+                .foregroundStyle(.secondary)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(iban.bankName)
+                    .font(.headline)
+                Text(iban.firmName)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Text(iban.iban)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            
+            Spacer()
+        }
+        .padding(.vertical, 4)
     }
 }
 

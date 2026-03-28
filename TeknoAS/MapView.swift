@@ -8,84 +8,119 @@
 import MapKit
 import SwiftUI
 
-
-
-
 struct MapView: View {
     
-    static var regions: [MKCoordinateRegion] = [
+    struct ShowroomLocation: Identifiable {
+        let id = UUID()
+        let name: String
+        let subtitle: String
+        let icon: String
+        let color: Color
+        let coordinate: CLLocationCoordinate2D
+        let region: MKCoordinateRegion
+    }
+    
+    private let locations: [ShowroomLocation] = [
+        ShowroomLocation(
+            name: NSLocalizedString("CENTER_OFFICE", comment: ""),
+            subtitle: "Gümüşçay Mah. Fabrikalar Cad. No:66",
+            icon: "building.2.fill",
+            color: .blue,
+            coordinate: CLLocationCoordinate2D(latitude: 37.801371, longitude: 29.064850),
+            region: MKCoordinateRegion(
+                center: CLLocationCoordinate2D(latitude: 37.801371, longitude: 29.064850),
+                span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
+            )
+        ),
+        ShowroomLocation(
+            name: NSLocalizedString("VİTRA_SHOWROOM", comment: ""),
+            subtitle: "Vitra Bayii",
+            icon: "storefront.fill",
+            color: .orange,
+            coordinate: CLLocationCoordinate2D(latitude: 37.805720, longitude: 29.071892),
+            region: MKCoordinateRegion(
+                center: CLLocationCoordinate2D(latitude: 37.805720, longitude: 29.071892),
+                span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
+            )
+        )
+    ]
+    
+    @State private var cameraPosition: MapCameraPosition = .region(
         MKCoordinateRegion(
             center: CLLocationCoordinate2D(latitude: 37.801371, longitude: 29.064850),
             span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
-        ),
-        MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 37.735938, longitude: 29.119204),
-            span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
-           ),
-        MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 37.805720, longitude: 29.071892),
-            span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
-           ),
-        MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 37.756448, longitude: 29.096547),
-            span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
-           ),    ]
-    
-    struct Location: Identifiable {
-        let id = UUID()
-        let name: String
-        let coordinate: CLLocationCoordinate2D
-    }
-    
-    private let locations: [Location] = [
-        Location(name: NSLocalizedString("CENTER_OFFICE", comment:""), coordinate: regions[0].center),
-        Location(name: NSLocalizedString("EGE_SHOWROOM", comment: ""), coordinate: regions[1].center),
-        Location(name: NSLocalizedString("VİTRA_SHOWROOM", comment: ""), coordinate: regions[2].center),
-        Location(name: NSLocalizedString("GÜRAL_SHOWROOM", comment: ""), coordinate: regions[3].center),
-    ]
-        
-    
-    
-    @State private var cameraPosition: MapCameraPosition = .region(regions[0])
+        )
+    )
     @State private var selectedIndex = 0
     
-    
-    
     var body: some View {
-            Map(position: $cameraPosition) {
-                ForEach(locations) { location in
-                    Marker(location.name, coordinate: location.coordinate)
+        NavigationStack {
+            ZStack(alignment: .bottom) {
+                // Harita
+                Map(position: $cameraPosition) {
+                    ForEach(locations) { location in
+                        Marker(location.name, systemImage: location.icon, coordinate: location.coordinate)
+                            .tint(location.color)
+                    }
+                }
+                .mapStyle(.standard(elevation: .realistic))
+                .ignoresSafeArea(edges: .bottom)
+                
+                // Alt konum kartları
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(Array(locations.enumerated()), id: \.element.id) { index, location in
+                            Button(action: {
+                                selectedIndex = index
+                                withAnimation {
+                                    cameraPosition = .region(location.region)
+                                }
+                            }) {
+                                HStack(spacing: 12) {
+                                    ZStack {
+                                        Circle()
+                                            .fill(location.color.opacity(selectedIndex == index ? 1.0 : 0.15))
+                                            .frame(width: 44, height: 44)
+                                        
+                                        Image(systemName: location.icon)
+                                            .font(.system(size: 18))
+                                            .foregroundStyle(selectedIndex == index ? .white : location.color)
+                                    }
+                                    
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(location.name)
+                                            .font(.subheadline)
+                                            .fontWeight(.semibold)
+                                            .foregroundStyle(.primary)
+                                        Text(location.subtitle)
+                                            .font(.caption2)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 10)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .fill(.ultraThinMaterial)
+                                        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .stroke(selectedIndex == index ? location.color : .clear, lineWidth: 2)
+                                )
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, 20)
                 }
             }
-            .overlay(
-                VStack{
-                    Picker("picker", selection: $selectedIndex) {
-                        Text("CENTER_OFFICE").tag(0)
-                        Text("EGE_SHOWROOM").tag(1)
-                        Text("VİTRA_SHOWROOM").tag(2)
-                        Text("GÜRAL_SHOWROOM").tag(3)
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .padding()
-                    .onChange(of: selectedIndex) { oldValue, newValue in
-                        cameraPosition = .region(MapView.regions[newValue])
-                    }
-                     
-                    Spacer()
-                }
-            )
-        
-        
-    }    }
-
-    
-    
-    
-
-
-struct map_Previews: PreviewProvider {
-    static var previews: some View {
-        MapView()
+            .navigationTitle(String(localized: "MAPS_"))
+            .navigationBarTitleDisplayMode(.inline)
+        }
     }
 }
 
+#Preview {
+    MapView()
+}

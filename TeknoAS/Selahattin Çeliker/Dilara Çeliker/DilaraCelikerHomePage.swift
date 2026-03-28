@@ -1,14 +1,14 @@
 //
-//  SelahattinCelikerHomePage.swift
+//  DilaraCelikerHomePage.swift
 //  TeknoAS
 //
-//  Created by Mehmet Gümrah on 15.02.2025.
+//  Created by Mehmet Gümrah on 16.03.2026.
 //
 
 import SwiftUI
 
 
-struct SelahattinCelikerHomePage: View {
+struct DilaraCelikerHomePage: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.modelContext) var modelContext
     
@@ -16,34 +16,32 @@ struct SelahattinCelikerHomePage: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
-                    // Başlık
                     VStack(spacing: 8) {
                         ZStack {
                             Circle()
                                 .fill(
                                     LinearGradient(
-                                        colors: [.blue, .cyan],
+                                        colors: [.pink, .purple],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     )
                                 )
                                 .frame(width: 80, height: 80)
                             
-                            Text("SÇ")
+                            Text("DÇ")
                                 .font(.system(size: 30, weight: .bold, design: .rounded))
                                 .foregroundStyle(.white)
                         }
                         .padding(.top, 8)
                         
-                        Text("Selahattin Çeliker")
+                        Text("Dilara Çeliker")
                             .font(.title2)
                             .fontWeight(.bold)
                             .foregroundStyle(.primary)
                     }
                     
-                    // Menü Kartları
                     VStack(spacing: 14) {
-                        NavigationLink(destination: SelahattinCelikerBilgileri()) {
+                        NavigationLink(destination: DilaraCelikerBilgileri()) {
                             HomeMenuCard(
                                 title: String(localized: "PERSONAL_INFORMATION"),
                                 subtitle: "Kişisel bilgiler",
@@ -52,7 +50,7 @@ struct SelahattinCelikerHomePage: View {
                             )
                         }
                         
-                        NavigationLink(destination: SCIban(modelContext: modelContext)) {
+                        NavigationLink(destination: DCIban(modelContext: modelContext)) {
                             HomeMenuCard(
                                 title: String(localized: "IBAN_SPECS"),
                                 subtitle: "Banka hesap bilgileri",
@@ -61,7 +59,7 @@ struct SelahattinCelikerHomePage: View {
                             )
                         }
                         
-                        NavigationLink(destination: SCKrediKartiListesi(modelContext: modelContext)) {
+                        NavigationLink(destination: DCKrediKartiListesi(modelContext: modelContext)) {
                             HomeMenuCard(
                                 title: String(localized: "CREDIT_CARD"),
                                 subtitle: "Mail order kart bilgileri",
@@ -80,5 +78,5 @@ struct SelahattinCelikerHomePage: View {
 }
 
 #Preview {
-    SelahattinCelikerHomePage()
+    DilaraCelikerHomePage()
 }
